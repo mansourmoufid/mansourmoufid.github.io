@@ -1,0 +1,24 @@
+<style>
+    @media screen {
+        nav.bar {
+        }
+        nav.bar p {
+            display: none;
+        }
+        nav.bar > ul {
+            display: inline-block;
+            list-style: none;
+            padding-inline-start: 0;
+        }
+        nav.bar > ul > li {
+            position: relative;
+            float: left;
+            padding-inline-start: 1em;
+        }
+        nav.bar > ul > li:before {
+            content: "›";
+        }
+        nav.bar > ul > li > a {
+        }
+    }
+</style>

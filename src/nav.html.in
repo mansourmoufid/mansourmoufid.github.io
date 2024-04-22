@@ -1,0 +1,17 @@
+<nav class="bar">
+    <p>Site navigation:</p>
+    <ul typeof="BreadcrumbList">
+        <li property="itemListElement" typeof="ListItem">
+            <meta property="position" content="1">
+            <a href="${origin}/" property="item" typeof="WebPage">
+                <span id="home" property="name">Home</span>
+            </a>
+        </li>
+        <li property="itemListElement" typeof="ListItem">
+            <meta property="position" content="2">
+            <a href="${origin}/aboutme/" property="item" typeof="WebPage">
+                <span id="aboutme" property="name">About me</span>
+            </a>
+        </li>
+    </ul>
+</nav>
