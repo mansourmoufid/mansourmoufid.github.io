@@ -4,7 +4,7 @@
         <li property="itemListElement" typeof="ListItem">
             <meta property="position" content="1">
             <a href="${origin}/" property="item" typeof="WebPage">
-                <span id="home" property="name">Home</span>
+                <span id="home" property="name">Mansour's blog</span>
             </a>
         </li>
         <li property="itemListElement" typeof="ListItem">
