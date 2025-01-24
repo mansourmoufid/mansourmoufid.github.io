@@ -116,9 +116,85 @@
                 loader: {load: ["input/tex", "output/svg"]}
             };
         </script>
+        <style>
+    @media screen {
+        body {
+            --background-color: #fefefe;
+            --text-color: #333;
+            --link-color: #333;
+            --link-hover-color: #000;
+            font-family: 'Palatino', serif;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+        a {
+            color: var(--link-color);
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+        }
+        a:hover {
+            color: var(--link-hover-color);
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                --background-color: #333;
+                --text-color: #ddd;
+                --link-color: #eee;
+                --link-hover-color: #fff;
+            }
+        }
+    }
+</style>
+
+        <style>
+    @media screen {
+        nav.bar {
+        }
+        nav.bar p {
+            display: none;
+        }
+        nav.bar > ul {
+            display: inline-block;
+            list-style: none;
+            padding-inline-start: 0;
+        }
+        nav.bar > ul > li {
+            position: relative;
+            float: left;
+            padding-inline-start: 1em;
+        }
+        nav.bar > ul > li:before {
+            content: "›";
+        }
+        nav.bar > ul > li > a {
+        }
+    }
+</style>
+
     </head>
-    <body>
+    <body vocab="http://schema.org/">
         <header>
+            <nav class="bar">
+    <p>Site navigation:</p>
+    <ul typeof="BreadcrumbList">
+        <li property="itemListElement" typeof="ListItem">
+            <meta property="position" content="1">
+            <a href="https://mansourmoufid.github.io/" property="item" typeof="WebPage">
+                <span id="home" property="name">Mansour's blog</span>
+            </a>
+        </li>
+        <li property="itemListElement" typeof="ListItem">
+            <meta property="position" content="2">
+            <a href="https://mansourmoufid.github.io/aboutme/" property="item" typeof="WebPage">
+                <span id="aboutme" property="name">About me</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+            <hr>
             <h1>The Brain-Selective Nutrient Index and the Top 1000 Brain-Selective Nutrient Dense Foods</h1>
             <hr>
             <p>
