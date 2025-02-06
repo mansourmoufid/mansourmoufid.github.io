@@ -21,7 +21,7 @@
         }
         @media (prefers-color-scheme: dark) {
             body {
-                --background-color: #333;
+                --background-color: #222;
                 --text-color: #ddd;
                 --link-color: #eee;
                 --link-hover-color: #fff;
