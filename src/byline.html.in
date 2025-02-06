@@ -1,0 +1,6 @@
+Author:
+<span property="author" typeof="Person">
+<a property="url" href="${origin}/aboutme/">
+<span property="name">Mansour Moufid</span>
+</a>
+</span>
