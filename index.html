@@ -75,8 +75,14 @@
 </style>
 
     </head>
-    <body vocab="http://schema.org/">
+    <body vocab="http://schema.org/" typeof="WebSite">
         <header>
+            <meta property="name" content="Mansour's website">
+            <meta property="url" content="https://mansourmoufid.github.io">
+            <span property="author" typeof="Person">
+                <meta property="name" content="Mansour Moufid">
+                <meta property="url" content="https://mansourmoufid.github.io/aboutme/">
+            </span>
             <nav class="bar">
     <p>Site navigation:</p>
     <ul typeof="BreadcrumbList">
@@ -115,15 +121,7 @@
         <footer>
             <hr>
             <p>
-                <span typeof="WebSite">
-                    <meta property="name" content="Mansour's website">
-                    <meta property="url" content="https://mansourmoufid.github.io">
-                    <span property="author" typeof="Person">
-                        <meta property="name" content="Mansour Moufid">
-                        <meta property="url" content="https://mansourmoufid.github.io/aboutme/">
-                    </span>
-                    <span property="copyrightNotice">&copy; 2024, 2025, Mansour Moufid</span>
-                </span>
+                <span property="copyrightNotice">&copy; 2024, 2025, Mansour Moufid</span>
             </p>
         </footer>
     </body>
