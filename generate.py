@@ -13,6 +13,7 @@ substitutions = {
     'nav_style': 'src/nav-style.html.in',
     'cc_by_nc_sa': 'src/cc-by-nc-sa.html.in',
     'byline': 'src/byline.html.in',
+    'analytics': 'src/analytics.html.in',
 }
 
 for line in sys.stdin:
