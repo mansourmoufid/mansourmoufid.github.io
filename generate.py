@@ -14,6 +14,7 @@ substitutions = {
     'cc_by_nc_sa': 'src/cc-by-nc-sa.html.in',
     'byline': 'src/byline.html.in',
     'analytics': 'src/analytics.html.in',
+    'table_style': 'src/table-style.html.in',
 }
 
 for line in sys.stdin:

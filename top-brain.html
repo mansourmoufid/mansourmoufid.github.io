@@ -26,14 +26,10 @@
                 font-family: 'Palatino', serif;
                 font-size: 12pt;
                 */
-                --table-h1: #ddd;
-                --table-h2: #eee;
                 --red: #ebb;
             }
             @media (prefers-color-scheme: dark) {
                 body {
-                    --table-h1: #444;
-                    --table-h2: #333;
                     --red: #633;
                 }
             }
@@ -59,57 +55,6 @@
             }
             main div {
                 padding-inline-start: 1em;
-            }
-            main table {
-                border: 1px solid;
-                /* width: 100%; */
-            }
-            main table > thead {
-                font-weight: bold;
-            }
-            main table > thead th {
-                height: 1.5em;
-                vertical-align: middle;
-                position: sticky;
-                top: 0;
-                z-index: 2;
-                background: var(--table-h1);
-            }
-            main table > tbody > tr {
-                border-bottom: 1px solid;
-            }
-            main table tr th,
-            main table tr td {
-                border-bottom: 1px solid var(--table-h2);
-            }
-            main table > tbody > tr:hover {
-                background-color: var(--table-h2);
-            }
-            main table > thead > tr > th,
-            main table > tbody > tr > td {
-                text-align: end;
-            }
-            main table > thead > tr > th:nth-child(1),
-            main table > tbody > tr > td:nth-child(1) {
-                text-align: start;
-            }
-            main table > tbody > tr > td {
-                vertical-align: top;
-            }
-            main table > tbody > tr.group > td {
-                font-size: 1.0em;
-                padding-left: inherit;
-                background: var(--table-h2);
-            }
-            main table > tbody > tr.group > td {
-                height: 1em;
-                position: sticky;
-                top: 1.5em;
-                z-index: 2;
-            }
-            main table > tbody > tr.food > td {
-                font-size: 0.8em;
-                padding-left: 2em;
             }
         </style>
         <script>
@@ -183,6 +128,70 @@
 </style>
 
         <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+        <style>
+    body {
+        --table-h1: #ddd;
+        --table-h2: #eee;
+    }
+    @media (prefers-color-scheme: dark) {
+        body {
+            --table-h1: #444;
+            --table-h2: #333;
+        }
+    }
+    main table {
+        border: 1px solid;
+        /* width: 100%; */
+    }
+    main table > thead {
+        font-weight: bold;
+    }
+    main table > thead th {
+        height: 1.5em;
+        vertical-align: middle;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--table-h1);
+    }
+    main table > tbody > tr {
+        border-bottom: 1px solid;
+    }
+    main table tr th,
+    main table tr td {
+        border-bottom: 1px solid var(--table-h2);
+    }
+    main table > tbody > tr:hover {
+        background-color: var(--table-h2);
+    }
+    main table > thead > tr > th,
+    main table > tbody > tr > td {
+        text-align: end;
+    }
+    main table > thead > tr > th:nth-child(1),
+    main table > tbody > tr > td:nth-child(1) {
+        text-align: start;
+    }
+    main table > tbody > tr > td {
+        vertical-align: top;
+    }
+    main table > tbody > tr.group > td {
+        font-size: 1.0em;
+        padding-left: inherit;
+        background: var(--table-h2);
+    }
+    main table > tbody > tr.group > td {
+        height: 1em;
+        position: sticky;
+        top: 1.5em;
+        z-index: 2;
+    }
+    main table > tbody > tr.food > td {
+        font-size: 0.8em;
+        padding-left: 2em;
+    }
+</style>
 
     </head>
     <body typeof="Article" vocab="http://schema.org/">
