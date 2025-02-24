@@ -9,20 +9,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="color-scheme" content="light dark">
         <style>
-            html {
-                scroll-behavior: smooth;
-                scroll-padding-top: 1.5em;
-            }
             body {
                 /*
                 font-family: 'Palatino', serif;
                 font-size: 12pt;
                 */
-                --red: #ebb;
             }
             @media (prefers-color-scheme: dark) {
                 body {
-                    --red: #633;
                 }
             }
             @media (min-width: 800px) {
@@ -56,11 +50,16 @@
         </style>
         <style>
     @media screen {
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 1.5em;
+        }
         body {
             --background-color: #fefefe;
             --text-color: #333;
             --link-color: #333;
             --link-hover-color: #000;
+            --red: #ebb;
             font-family: 'Palatino', serif;
             background: var(--background-color);
             color: var(--text-color);
@@ -81,6 +80,7 @@
                 --text-color: #ddd;
                 --link-color: #eee;
                 --link-hover-color: #fff;
+                --red: #633;
             }
         }
     }
