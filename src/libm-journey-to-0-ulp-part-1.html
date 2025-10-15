@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>libm: Journey to 0 ulp, part 1</title>
+        <meta content="Mansour Moufid" name="author">
+        <link href="${origin}/aboutme/" rel="author">
+        <!-- <meta name="description" content=""> -->
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta content="light dark" name="color-scheme">
+        <!--
+        <link rel="stylesheet" href="/css/common.css" type="text/css">
+        <link rel="stylesheet" href="/css/font.css" type="text/css">
+        -->
+        <script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+        <script async src="https://tikzjax.com/v1/tikzjax.js"></script>
+        <style>
+            body {
+            }
+            @media (prefers-color-scheme: dark) {
+                body {
+                }
+            }
+            h3.inline {
+                font-size: 1em;
+                padding-right: 1em;
+            }
+            p.inline::after {
+                content: "";
+                display: block;
+                margin-bottom: 1em;
+            }
+            table {
+                table-layout: auto;
+                width: auto;
+                white-space: nowrap;
+                /*
+                border-collapse: separate;
+                border-spacing: 1em 0;
+                */
+                border-collapse: collapse;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            thead {
+                font-weight: bold;
+            }
+            thead tr {
+                border-bottom: 1px solid var(--border-color);
+            }
+            tfoot {
+                font-size: 0.8em;
+            }
+            tr td {
+                padding-left: 0.5em;
+                padding-right: 0.5em;
+            }
+            .boom {
+                cursor: default;
+            }
+        </style>
+        <script>
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['$', '$'], ['\\(', '\\)']]
+                },
+                loader: {load: ["input/tex"]}
+            };
+        </script>
+        ${common_style}
+        ${nav_style}
+        ${analytics}
+        ${fonts}
+        ${sample_code_style}
+        ${figure_style}
+    </head>
+    <body typeof="Article" vocab="http://schema.org/">
+        <header>
+            ${nav}
+            <hr>
+            <h1>
+                <abbr title="math library">libm</abbr>:
+                Journey to 0
+                <abbr title="unit in the last place">ulp</abbr>,
+                part 1
+            </h1>
+            <p>
+                ${byline}<br>
+                Date: October 20, 2025<br>
+                Last updated: October 20, 2025
+            </p>
+            <hr>
+        </header>
+        <main>
+            <nav>
+                <h2>Table of Contents</h2>
+                <ol>
+                    <li>
+                        <a href="#review-of-floating-point-numbers">Review of floating-point numbers</a>
+                        <ol>
+                            <li><a href="#number-representation">Floating-point representation</a></li>
+                            <li><a href="#number-notation">Notation</a></li>
+                            <li><a href="#rational-decomposition">Rational decomposition</a></li>
+                        </ol>
+                    </li>
+                    <li>
+                        <a href="#review-of-floating-point-arithmetic">Review of floating-point arithmetic</a>
+                        <ol>
+                            <li><a href="#arithmetic-notation">Notation</a></li>
+                            <li><a href="#rounding-error">Rounding error</a></li>
+                            <li><a href="#catastrophic-cancellation">Catastrophic cancellation</a></li>
+                            <li><a href="#algebra">Floating-point algebra</a></li>
+                        </ol>
+                    </li>
+                    <li>
+                        <a href="#numerical-analysis">Numerical analysis and numerical methods</a>
+                        <ol>
+                            <li><a href="#programming-languages">Floating-point in programming languages</a></li>
+                            <li><a href="#radix-10">A note about radix 10</a></li>
+                        </ol>
+                    </li>
+                    <li><a href="#references">References</a></li>
+                </ol>
+            </nav>
+            <div>
+
+<p>
+Let's implement math library (<abbr>libm</abbr>) functions like sin 𝑥 and cos 𝑥,
+using only the single-precision floating-point type, basic arithmetic,
+and logic.
+
+This first part is a review of floating-point numbers and
+floating-point arithmetic.
+In the next part, we begin implementing the functions.
+</p>
+
+<h2 id="review-of-floating-point-numbers">Review of floating-point numbers</h2>
+
+<h3 id="number-representation" class="inline">Floating-point representation.</h3>
+<p class="inline">
+The <em>integers</em> ℤ are easily represented by computers as binary numbers.
+The <em>real numbers</em> ℝ are trickier,
+they must be appoximated by a fraction of two integers.
+In other words, the real numbers ℝ are reduced to the rational numers ℚ.
+The <abbr>IEEE</abbr>&nbsp;754 standard<a href="#ieee754">[1]</a>
+establishes the binary format of the
+<a href="https://mathworld.wolfram.com/Floating-PointNumber.html">floating-point numbers</a>.
+The textbook representation of a floating-point number is:
+\[ (-1)^{sign} \times 1.significand \times 2^{exponent} \]
+where <em>significand</em> and <em>exponent</em> are integers.
+The <em>sign</em> is always a one-bit integer 0 or 1.
+For <em>single-precision</em> floating-point numbers,
+<em>significand</em> is 24 bits, and <em>exponent</em> is 8 bits.
+</p>
+
+<p>
+(We will only consider the <em>normal</em> floating-point numbers.
+<em>Subnormals</em> should be excluded from any introductory text.
+Furthermore, we only consider <em>binary</em> floating-point numbers.)
+</p>
+
+<p>
+However, it's easier to understand floating-point numbers as a fraction
+of two integers where the denominator is a power of two.
+For example, the number 0.1 in single-precision floating-point format is
+represented as the fraction $13421773/2^{27}$ not 1/10.
+</p>
+<aside>
+<p>
+📝 All floating-point numbers are <em>rational numbers</em>
+and more specifically
+<a href="https://proofwiki.org/wiki/Definition:Dyadic_Rational"><em>dyadic rationals</em></a>.
+</p>
+</aside>
+<p>
+Let 𝔽<sub>IEEE754</sub> denote the set of floating-point numbers.
+(Not to be confused with a
+<a href="https://mathworld.wolfram.com/Field.html">field</a>!)
+Let 𝔻 denote the dyadic rationals.
+Then 𝔽<sub>IEEE754</sub> ⊂ 𝔻 ⊂ ℚ ⊂ ℝ.
+In other words, only a subset of the real numbers can be represented exactly
+as floating-point numbers.
+</p>
+
+<h3 id="number-notation" class="inline">Notation.</h3>
+<p class="inline">
+Let fl(𝑥) denote the function that rounds a real number 𝑥 to its nearest
+floating-point number, $\text{fl} : ℝ→𝔽_\text{IEEE754}$.
+Thus, fl(1/10) = $13421773/2^{27}$.
+</p>
+
+<h3 id="rational-decomposition" class="inline">Rational decomposition.</h3>
+<p class="inline">
+Recall that a floating-point number has the binary representation
+$\pm 1.significand \times 2^e$ where $e$ is the exponent.
+The significand is a sequence of bits that can be interpreted
+either as an integer or a fraction.
+</p>
+<dl>
+    <dt>The <em>integer significand</em></dt>
+    <dd>
+        The integer significand 𝑘 is the integer with the binary
+        representation of $(b_1b_2...b_p)_2$ where 𝑝 is the precision
+        (𝑝=24 for single-precision).
+        Thus, 𝑘 ∈ ℤ and $2^{p-1} \le k \lt 2^p$.
+    </dd>
+    <dt>The <em>significand</em></dt>
+    <dd>
+        The significand 𝑚 is the rational number formed by normalizing
+        the integer significand 𝑘 to the interval $[1,2)$.
+        Thus, 𝑚 ∈ ℚ and $m = k/{2^{p-1}}$.
+    </dd>
+</dl>
+<p>
+In other words the significand 𝑚 maps the integer significand 𝑘
+to the interval $[1, 2)$ by dividing by $2^{p-1}$.
+</p>
+<table>
+<caption>Summary of the two interpretations of the significand.</caption>
+<thead>
+    <tr>
+        <th>Number</th>
+        <th>Range</th>
+        <th>Relationship</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>Integer significand 𝑘</td>
+        <td>$2^{p-1} \le k \lt 2^p$</td>
+        <td>$k = m \times 2^{p-1}$</td>
+    </tr>
+    <tr>
+        <td>Normalized significand 𝑚</td>
+        <td>$1 \le m \lt 2$</td>
+        <td>$m = k / 2^{p-1}$</td>
+    </tr>
+    <tr>
+        <td>Floating-point number fl(𝑥)</td>
+        <td>$[2^e, (2-2^{-(p-1)})2^e)$</td>
+        <td>$\text{fl}(x) = m \times 2^e = k \times 2^{e-(p-1)}$</td>
+    </tr>
+    <!--
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    -->
+</tbody>
+<tfoot>
+    <tr><td colspan="3">Here we ignore subnormal floating-point numbers.</td></tr>
+    <tr><td colspan="3">𝑝=24 for single-precision floating-point numbers.</td></tr>
+</tfoot>
+</table>
+<p>
+For example, consider the floating-point number 10.
+The significand is represented in binary as
+$(b_1 b_2 ... b_{24})_2$ = 1010&nbsp;0000&nbsp;0000 0000&nbsp;0000&nbsp;0000
+and the exponent 𝑒 = 3.
+Then the integer significand 𝑘 = $2^{23} + 2^{21}$ = 10485760,
+and the floating-point number is equal to fl(𝑥) = $k \times 2^{e-23}$
+= 10485760 × 2⁻²⁰ = 10.
+To calculate the significand, we normalize the integer significand
+by dividing by $2^{23}$ so 𝑚 = $k/2^{23}$ = 10485760/8388608 = 1.25.
+Thus, the floating-point number is equal to fl(𝑥) = $m \times 2^e$
+= 1.25 × 2³ = 10.
+</p>
+<p>
+We can decompose a single-precision floating-point number into a rational
+by extracting the significand and exponent using the standard
+<a href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/frexp.html">frexp</a>
+function, with the caveat that <code>frexp</code> returns a significand
+normalized to [0.5, 1) instead of [1, 2), like so:
+</p>
+<div class="sample-code">
+<pre><code class="language-python">import math
+import sys
+
+
+def decomp(f):
+    # Decompose a floating point number into a/2^b.
+    n = 24  # bits in significand
+    frac, exp = math.frexp(f)  # frac in [0.5, 1), f = frac * 2^exp
+    a = int(round(frac * 2 ** n))  # Calculate the significand
+    b = n - exp
+    if f &lt; 0:
+        a = -a
+    while a % 2 == 0 and b > 0:  # Simplify the fraction
+        a //= 2
+        b -= 1
+    return (a, b)
+
+
+for x in sys.argv[1:]:
+    f = float(x)
+    a, b = decomp(f)
+    print('{}f = {} / 2^{}'.format(f, a, b))
+</code></pre>
+<div class="sample-code-buttons">
+<button>Copy</button>
+<form action="https://wandbox.org/permlink/hHDajmFypXfjGdLG" target="_blank">
+<button type="submit">▶ Run in Wandbox</button>
+</form>
+</div>
+<pre><output>0.1f = 13421773 / 2^27
+</output></pre>
+</div>
+<p>
+Thus, $13421773/2^{27}$ is the single-precision floating-point number nearest
+to 1/10.
+</p>
+
+<table>
+<caption>Common constants and their nearest single-precision floating-point numbers.</caption>
+<thead>
+    <tr>
+        <th>Constant</th>
+        <th>Symbol</th>
+        <th>Value</th>
+        <th>Nearest float</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>Pi</td>
+        <td>𝜋</td>
+        <td>3.14159265358979323846...</td>
+        <td>$13176795/2^{22}$</td>
+    </tr>
+    <tr>
+        <td>Euler's number</td>
+        <td>𝑒</td>
+        <td>2.71828182845904523536...</td>
+        <td>$2850325/2^{20}$</td>
+    </tr>
+    <tr>
+        <td>Square root of 2</td>
+        <td>$\sqrt 2$</td>
+        <td>1.41421356237309504880...</td>
+        <td>$11863283/2^{23}$</td>
+    </tr>
+    <tr>
+        <td>Gravitational constant</td>
+        <td>𝐺</td>
+        <td>6.67430×10⁻¹¹ m³⋅kg⁻¹⋅s⁻²</td>
+        <td>$1202335/2^{54}$</td>
+    </tr>
+    <tr>
+        <td>Electron mass</td>
+        <td>𝑚<sub>𝑒</sub></td>
+        <td>9.1093837139×10⁻³¹ kg</td>
+        <td>$4843379/2^{122}$</td>
+    </tr>
+    <tr><td colspan="3">1/10</td><td>$13421773 / 2^{27}$</td></tr>
+    <tr><td colspan="3">1/100</td><td>$5368709 / 2^{29}$</td></tr>
+    <tr><td colspan="3">1/1000</td><td>$8589935 / 2^{33}$</td></tr>
+    <tr><td colspan="3">10⁻⁶</td><td>$8796093 / 2^{43}$</td></tr>
+    <tr><td colspan="3">10⁻⁹</td><td>$9007199 / 2^{53}$</td></tr>
+    <!--
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    -->
+</tbody>
+<tfoot>
+    <!-- <tr><td colspan="4"></td></tr> -->
+</tfoot>
+</table>
+
+<h2 id="review-of-floating-point-arithmetic">Review of floating-point arithmetic</h2>
+
+<h3 id="arithmetic-notation" class="inline">Notation.</h3>
+<p class="inline">
+Floating-point arithmetic operators are usually denoted with circled symbols,
+to distinguish them from arithmetic with the reals.
+Let ⊕ denote floating-point addition,
+⊖ denote floating-point subtraction,
+⊗ denote floating-point multiplication, and so on.
+</p>
+
+<h3 id="rounding-error" class="inline">Rounding error.</h3>
+<p class="inline">
+Continuing with the example of 1/10,
+which we denote as the floating-point number <code>0.1f</code>
+(the suffix <code>f</code> denotes a single-precision floating-point literal).
+It is represented as $13421773/2^{27}$,
+which is the closest floating-point number to 1/10.
+</p>
+<p>Let's square this number:</p>
+<div class="sample-code">
+<pre><code class="language-c">#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+typedef struct {
+    long int a;
+    long int b;
+} tuple;
+
+// Decompose a floating point number into a/2^b.
+static tuple decomp(float f) {
+    int n = 24; // bits in significand
+    int exp;
+    float frac = frexpf(f, &exp);  // frac in [0.5, 1), f = frac * 2^exp
+    long int a = lrintf(frac * (1L &lt;&lt; n));  // Calculate the significand
+    long int b = n - exp;
+    if (f &lt; 0)
+        a = -a;
+    while ((a % 2 == 0) && b > 0) {  // Simplify the fraction
+        a /= 2;
+        b -= 1;
+    }
+    return (tuple) {a, b};
+}
+
+int main(void) {
+    float a = 0.1f;
+    float b = a * a;
+    printf("a = %ff = %li / 2^%li\n", a, decomp(a).a, decomp(a).b);
+    printf("a * a = %ff = %li / 2^%li\n", b, decomp(b).a, decomp(b).b);
+    printf("0.01f = %ff = %li / 2^%li\n", 0.01f, decomp(0.01f).a, decomp(0.01f).b);
+    printf("%ff * %ff == %ff ? %s\n", a, a, 0.01f, a * a == 0.01f ? "true" : "false");
+    return 0;
+}
+</code></pre>
+<div class="sample-code-buttons">
+<button>Copy</button>
+<form action="https://wandbox.org/permlink/MCxNAaXxxe7wrofv" target="_blank">
+<button type="submit">▶ Run in Wandbox</button>
+</form>
+</div>
+<pre><output>a = 0.100000f = 13421773 / 2^27
+a * a = 0.010000f = 10737419 / 2^30
+0.01f = 0.010000f = 5368709 / 2^29
+0.100000f * 0.100000f == 0.010000f ? false
+</output></pre>
+</div>
+<p>
+So <code>0.1f</code> ⊗ <code>0.1f</code> ≠ <code>0.01f</code>.
+<span class="boom">😯</span>
+We were expecting the result to be the closest floating-point number to 1/100
+which is $1073741\underline{8}/2^{30}$.
+Intead we got $1073741\underline{9}/2^{30}$.
+That is off by $1/2^{30}$.
+</p>
+<p>
+This is called
+<a href="https://mathworld.wolfram.com/RoundoffError.html"><em>rounding error</em></a>.
+All floating-point <em>operations</em> produce rounding error.
+Sometimes the error is zero, sometimes not.
+(Do not confuse rounding error with rounding a real number to the nearest
+floating-point number. Rounding error is a result of floating-point
+arithmetic <em>operations</em>.)
+</p>
+
+<h3 id="catastrophic-cancellation" class="inline">Catastrophic cancellation.</h3>
+<p class="inline">
+Now let's add a big number and a small number, say 10⁸ and 1:
+</p>
+<div class="sample-code">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void) {
+    float a = 100000000.0f;
+    float b = 1.0f;
+    float c = a + b;
+    printf("%ff + %ff = %ff\n", a, b, c);
+    return 0;
+}
+</code></pre>
+<div class="sample-code-buttons">
+<button>Copy</button>
+<form action="https://wandbox.org/permlink/d2VBVLMv0BY2xuDh" target="_blank">
+<button type="submit">▶ Run in Wandbox</button>
+</form>
+</div>
+<pre><output>100000000.000000f + 1.000000f = 100000000.000000f
+</output></pre>
+</div>
+<p>
+So <code>100000000.0f</code> ⊕ <code>1.0f</code> = <code>100000000.0f</code>
+not <code>100000001.0f</code>!
+<span class="boom">😯</span>
+</p>
+<p>
+Despite the fact that both $10^8$ and $1$ are represented exactly as
+floating-point numbers, the addition <em>operation</em> produces the error.
+This is an example of a subset of rounding error called
+<em>catastrophic cancellation</em>.
+This happens when one operand of a floating-point operation is much
+larger in magnitude than the other.
+</p>
+
+<h3 id="algebra" class="inline">Floating-point algebra.</h3>
+<p class="inline">
+Let's add three numbers using different orders of operations:
+</p>
+<div class="sample-code">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void) {
+    float a = 16777216.0f;  // 2²⁴
+    float b = 1.0f;
+    float c = -a;
+    printf("(a + b) + c = %f\n", (a + b) + c);
+    printf("a + (b + c) = %f\n", a + (b + c));
+    return 0;
+}
+</code></pre>
+<div class="sample-code-buttons">
+<button>Copy</button>
+<form action="https://wandbox.org/permlink/UeF0CGXUPT9GAAPf" target="_blank">
+<button type="submit">▶ Run in Wandbox</button>
+</form>
+</div>
+<pre><output>(a + b) + c = 0.000000
+a + (b + c) = 1.000000
+</output></pre>
+</div>
+<p>
+So sometimes (a ⊕ b) ⊕ c ≠ a ⊕ (b ⊕ c)!
+<span class="boom">😯</span>
+In other words, floating-point addition is not associative.
+Furthermore, floating-point multiplication is not distributive.
+</p>
+<p>
+Floating-point algebra creates surprises like this because,
+unlike the real numbers ℝ or the rational numbers ℚ that we are all
+familiar with from algebra,
+the floating-point numbers 𝔽<sub>IEEE754</sub> do not form a field
+or even a <a href="https://mathworld.wolfram.com/Ring.html">ring</a>.
+</p>
+<aside>
+<p>
+📝 Addition, subtraction, and multiplication of two dyadic rationals always
+results in a dyadic rational, but not division!
+So 𝔻 is a ring, not a field.
+</p>
+</aside>
+<p>
+Recall floating-point numbers 𝔽<sub>IEEE754</sub> are a subset of the
+dyadic rationals (excluding special values like <code>NaN</code>),
+with limits on the magnitude of numerator and denominator.
+These limits introduce overflow/underflow and rounding error
+which break associativity, distributivity and closure.
+</p>
+
+<h2 id="numerical-analysis">Numerical analysis and numerical methods</h2>
+
+<p>
+Computer processors can do some finite set of operations:
+</p>
+    <ul>
+        <li>arithmetic operations (addition, multiplication, etc.);</li>
+        <li>logical operations (and, or, etc.);</li>
+        <li>control operations (jump, branch, etc.); and</li>
+        <li>data movement (load, store, etc.);</li>
+    </ul>
+<p>
+<em>Algebraic functions</em> like $\sqrt{x^2+1}$ can be expressed as a finite
+combination of basic arithmetic operations (addition, multiplication, etc)
+and radicals (square root, cubic root, etc), and therefore can in theory
+be computed exactly by an ideal computer processor with arbitrary precision
+registers.
+<em>Transcendental functions</em>, however, cannot.
+And yet your calculator app computes transcendental functions like
+𝑒<sup>𝑥</sup>, ln 𝑥, sin 𝑥 or cos 𝑥.
+How?
+</p>
+<p>
+By reducing a transcendental function's domain to the floating-point numbers,
+the function becomes a <em>discrete function</em>.
+By further restricting the function's range to those floating-point values
+closest to the real function values
+(rounding to the nearest floating-point value),
+the function becomes a finite discrete mapping.
+This new function, the <em>approximation</em>,
+is now computable using only basic arithmetic and logic that computer
+processors are capable of.
+</p>
+<aside>
+<p>
+📝 A floating-point approximation of a transcendental function, because
+it is representable exactly by a Lagrange polynomial over its discrete domain,
+is in theory computable using only basic arithmetic and logic
+(again, on an ideal computer).
+This computation could be implemented as a <em>look-up table</em> on a
+computer with unlimited memory, or a <em>Lagrange polynomial</em> on a
+processor with arbitrary precision registers.
+In reality however, computers have finite resources,
+so approximations of transcendental functions are themselves approximated!
+<p>
+</aside>
+<p>
+This is
+<a href="https://encyclopediaofmath.org/wiki/Numerical_analysis"><em>numerical analysis</em></a>
+&mdash;the science of reducing problems of continuous mathematics to
+discrete approximations, and solving using the finite subset of real numbers
+that are representable as floating-point numbers.
+<em>Numerical methods</em> are the algorithms used to achieve accurate and
+precise (enough) results despite the errors produced by floating-point
+operations.
+</p>
+<p>
+For a great introduction to numerical analysis, begin with
+<em>Numerical Methods for Scientists and Engineers</em>.
+<a href="#hamming1962">[2]</a>
+</p>
+
+<h3 id="programming-languages" class="inline">Floating-point in programming languages.</h3>
+<p class="inline">
+Floating-point <em>numbers</em> are standardized, so they are the same
+across languages.
+Programming languages implement floating-point <em>algebra</em> differently.
+</p>
+<p>
+The first widely used compilers to support IEEE 754 were Fortran compilers,
+followed by Ada and C compilers.
+In Fortran, the floating-point type is named <code>REAL</code> and
+algebraic expressions of floating-point numbers are treated the same
+as algebra in ℝ. 😬
+This means that the compiler is free to assume associativity, distributivity,
+and closure, and therefore rewrite expressions like <code>a+b→b+a</code>.
+The only way to prevent the compiler from doing so is to use parentheses.
+In C and C++, the floating-point type is named <code>float</code>.
+The C standard does not allow reordering of operations,
+unless the compiler is sure that doing so does not change the result, i.e.
+only in cases where all values are known finite, nonzero and not
+<code>NaN</code>.
+A Fortran compiler has more freedom than a C or C++ compiler,
+and Fortran programs are often faster.
+</p>
+<p>
+In Python, the floating-point type is named <code>float</code>
+and is double-precision.
+Python being an interpreted language, lacks any optimization,
+so floating-point code does exactly what it says.
+Python provides a large built-in <code>math</code> library,
+as well as an extensive numerics package called NumPy.
+</p>
+
+<h3 id="radix-10" class="inline">A note about radix 10.</h3>
+<p class="inline">
+From the table of common constants above, it's clear that conversion between
+power-of-10 units using floating-point arithmetic&mdash;for
+example from milligrams to micrograms, or between currencies&mdash;is
+never exact.
+The Texas Instruments graphing calculators use radix 10 for this reason.
+These calculators are used in education where children only know radix/base 10.
+</p>
+
+<figure class="side-by-side" id="figure1">
+<picture>
+<img alt="" src="/images/ti83plus-1.png" width="360" height="360">
+</picture>
+<figcaption>
+The TI-83 Plus graphing calculator has a Zilog Z80 processor,
+and floating-point arithmetic is implemented entirely in software.
+IEEE 754 floating-point would be too slow for this 8-bit processor.
+It uses a non-standard radix 10 floating-point format,
+$\pm m_1m_2...m_{16} \times 10^e$,
+which <abbr>TI</abbr> call "TI BCD floating-point numbers."
+The significand contains 16 decimal digits, $m = m_1m_2...m_{16}$,
+$0 \le m_i \lt 9$, $1 \le m \lt 10$, each encoded two per byte;
+and the exponent is two bytes minus one bit for the sign.
+This floating-point format is human readable in hexadecimal!
+For example, the value for π in Z80 assembly language is:<br>
+<code>
+_PI:<br>
+.word 0x4000<br>
+.long 0x31415926,0x53589793<br>
+</code>
+</figcaption>
+</figure>
+
+<p>
+Compare a program that calculates $\sum_1^{1000} 0.001$
+(for example, accumulating time in milliseconds as part of a physics problem),
+first using IEEE 754 floating-point arithmetic,
+and second using the Texas Instruments floating-point arithmetic.
+The TI-BASIC program produces an exact sum and won't confuse students.
+This is the benefit of radix 10 in education.
+</p>
+<div class="sample-code">
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void) {
+    double dt = 0.001;
+    double t = 0.0;
+    for (int i = 0; i &lt; 1000; i++)
+        t = t + dt;
+    printf("%s\n", t == 1.0 ? "true" : "false");
+    return 0;
+}
+</code></pre>
+<div class="sample-code-buttons"><button>Copy</button></div>
+<pre><output>false
+</output></pre>
+</div>
+<div class="sample-code">
+<pre><code>0.0→T
+0.001→D
+For(I,1,1000)
+T+D→T
+End
+Disp T=1.0
+</code></pre>
+<div class="sample-code-buttons"><button>Copy</button></div>
+<pre><output>               1
+            Done
+</output></pre>
+</div>
+
+<p>The IEEE 754 standard states:</p>
+<blockquote>
+This standard specifies floating-point arithmetic in two radices, 2 and 10.
+A programming environment may conform to this standard in one radix or in both.
+</blockquote>
+<p>
+In the case of radix 10, a floating-point number is represented as
+$1.significand \times 10^{exponent}$.
+This is called a <em>decimal floating-point number</em> as opposed to
+a <em>binary floating-point number</em>.
+</p>
+
+<p>
+Radix 10 is preferred in the natural sciences, engineering, business,
+and finance.
+Decimal floating-point is better than binary with respect to usability,
+but has two important drawbacks&mdash;ease of implementation and speed.
+Binary floating-point arithmetic is easier to implement in hardware
+and is therefore faster and cheaper, so the binary format has definitively won.
+</p>
+
+<h2 id="references">References</h2>
+    <ol>
+        <li>
+<a id="ieee754">
+<em>IEEE Standard for Floating-Point Arithmetic</em>.
+IEEE Std 754-2019, 2019.
+</a>
+<a href="https://www.ecosia.org/search?q=IEEE+754+filetype%3Apdf" target="_blank">
+Search for the PDF file.
+</a>
+        </li>
+        <li>
+<a id="hamming1962">
+Hamming, R.W.
+<em>Numerical Methods for Scientists and Engineers</em>.
+McGraw-Hill, 1962. ISBN: 9780070258877.
+</a>
+        </li>
+    </ol>
+            </div>
+        </main>
+        <footer class="small">
+            <hr>
+            ${cc_by_nc_sa}
+        </footer>
+<script>
+document.querySelectorAll(".boom").forEach(el => {
+    const original = el.textContent;
+    const hoverEmoji = "🤯";
+    el.addEventListener("mouseover", () => {el.textContent = hoverEmoji;});
+    el.addEventListener("mouseout", () => {el.textContent = original;});
+});
+</script>
+    </body>
+</html>
