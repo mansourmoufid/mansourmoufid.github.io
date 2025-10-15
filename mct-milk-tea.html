@@ -37,10 +37,11 @@
             scroll-padding-top: 1.5em;
         }
         body {
-            --background-color: #fefefe;
-            --text-color: #333;
+            --background-color: #F9F8F4;
+            --text-color: #2E2E2E;
             --link-color: #333;
             --link-hover-color: #000;
+            --header-color: #003366;
             --red: #ebb;
             font-family: 'Palatino', serif;
             background: var(--background-color);
@@ -56,12 +57,39 @@
             text-decoration: underline;
             text-decoration-thickness: 2px;
         }
+        a:not([href]) {
+            text-decoration: none;
+        }
+        a:not([href]):hover {
+            text-decoration: none;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--header-color);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: 800;
+        }
+        h2 {
+            font-size: 1.6em;
+        }
+        h3 {
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+        h4, h5, h6 {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
         @media (prefers-color-scheme: dark) {
             body {
                 --background-color: #222;
                 --text-color: #ddd;
                 --link-color: #eee;
                 --link-hover-color: #fff;
+                --header-color: #fff;
                 --red: #633;
             }
         }
