@@ -33,5 +33,33 @@
                 --red: #633;
             }
         }
+        @media (min-width: 800px) {
+            main {
+                display: grid;
+                grid-template-columns: 25% 1fr;
+            }
+            main > nav {
+                position: sticky;
+                top: 0;
+                align-self: start;
+                height: 100vh;
+                overflow-y: scroll;
+            }
+        }
+        @media (max-width: 799px) {
+            main > nav {
+                display: none;
+            }
+        }
+        main > nav > ol {
+            list-style-type: none;
+            padding-inline-start: 0;
+        }
+        main > nav > ol > li > ol {
+            list-style-type: circle;
+        }
+        main div {
+            padding-inline-start: 1em;
+        }
     }
 </style>
