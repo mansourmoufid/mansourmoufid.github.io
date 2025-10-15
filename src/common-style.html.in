@@ -11,7 +11,7 @@
             --link-hover-color: #000;
             --header-color: #003366;
             --red: #ebb;
-            font-family: 'Palatino', serif;
+            font-family: 'TeX Gyre Pagella Math', 'Palatino', 'Palatino Linotype', serif;
             background: var(--background-color);
             color: var(--text-color);
         }

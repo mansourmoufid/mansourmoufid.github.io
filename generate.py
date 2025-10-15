@@ -8,6 +8,7 @@ substitutions = {
     'email': os.environ['EMAIL'],
 
     'common_style': 'src/common-style.html.in',
+    'fonts': 'src/fonts.html.in',
     'footer': 'src/footer.html.in',
     'nav': 'src/nav.html.in',
     'nav_style': 'src/nav-style.html.in',

@@ -35,7 +35,7 @@
             --link-hover-color: #000;
             --header-color: #003366;
             --red: #ebb;
-            font-family: 'Palatino', serif;
+            font-family: 'TeX Gyre Pagella Math', 'Palatino', 'Palatino Linotype', serif;
             background: var(--background-color);
             color: var(--text-color);
         }
@@ -142,6 +142,47 @@
 </style>
 
         <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+        <link rel="preload" href="/texgyrepagella-math.woff" as="font" type="font/woff" crossorigin>
+<style>
+/*
+pip install --user fonttools
+fonttools subset tex-gyre-math/opentype/texgyrepagella-math.otf \
+  --output-file=texgyrepagella-math.woff \
+  --flavor=woff \
+  --unicodes="U+0370-03FF,U+2190-21FF,U+2200-22FF,U+2300-23FF,U+27C0-27FF,U+2900-297F,U+2980-29FF,U+2A00-2AFF,U+1D400-1D7FF" \
+  --layout-features='*' \
+  --symbol-cmap \
+  --legacy-cmap \
+  --glyph-names \
+  --no-prune-unicode-ranges \
+  --passthrough-tables \
+  --no-hinting
+*/
+    @font-face {
+        font-family: 'TeX Gyre Pagella Math';
+        src: url('/texgyrepagella-math.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+</style>
+
+<link rel="preload" href="/jetbrainsmono-regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+    @font-face {
+        font-family: 'JetBrains Mono';
+        src: url('/jetbrainsmono-regular.woff2') format('woff2');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+    code, output {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.875em;
+        line-height: 1.0em;
+    }
+</style>
 
     </head>
     <body vocab="http://schema.org/" typeof="WebSite">
