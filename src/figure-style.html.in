@@ -1,0 +1,21 @@
+<style>
+figure.side-by-side {
+    display: grid;
+    grid-template-columns: 40% 1fr;
+    grid-auto-rows: min-content;
+    gap: 10px;
+}
+figure.side-by-side picture img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+@media (max-width: 600px) {
+    figure.side-by-side picture {
+        max-width: 200px;
+    }
+    figure.side-by-side figcaption {
+        font-size: 0.8em;
+    }
+}
+</style>

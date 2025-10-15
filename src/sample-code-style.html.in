@@ -1,0 +1,86 @@
+<style>
+    .sample-code {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* two columns */
+        grid-template-rows: auto auto;
+        gap: 1px 1em;
+        align-items: start;
+        padding: 0;
+        padding-bottom: 10px;
+    }
+    .sample-code > pre:first-of-type {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .sample-code > form {
+        display: inline-flex;
+        gap: 1px;
+        margin: 1px 0 0 0;
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .sample-code-buttons {
+        display: inline-flex;  /* side by side */
+        padding: 0;
+    }
+    .sample-code > .sample-code-buttons > form > button,
+    .sample-code > .sample-code-buttons > button {
+        transform: scale(0.8);
+        transform-origin: top left;
+    }
+    .sample-code > pre:last-of-type {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+    .sample-code > pre:first-of-type,
+    .sample-code > pre:last-of-type {
+        margin: 0;
+        border: 1px solid var(--border-color);
+        padding: 0.5em;
+        min-width: 40ch;
+        max-width: 80ch;
+        max-height: 24em;
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: pre;
+    }
+    @media (max-width: 127ch) {
+        .sample-code {
+            grid-template-columns: 1fr; /* one column */
+        }
+        .sample-code > pre:last-of-type {
+            grid-column: 1; /* move to same column */
+            grid-row: auto; /* natural stacking */
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/prism.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-c.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js" defer></script>
+<style>
+    .token.keyword { font-weight: bold; color: #41729f; }
+    .token.number  { color: #287878; }
+    .token.string  { color: #3b6e3b; }
+    .token.comment { color: #8b5e3c; font-style: italic; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".sample-code").forEach(sample => {
+        const code = sample.querySelector("pre code");
+        if (!code)
+            return;
+        const copy_button = sample.querySelector(".sample-code-buttons > button");
+        if (!copy_button)
+            return;
+        copy_button.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(code.textContent);
+                copy_button.textContent = "Copied";
+            } catch {}
+            setTimeout(() => copy_button.textContent = "Copy", 1000);
+        });
+    });
+});
+</script>

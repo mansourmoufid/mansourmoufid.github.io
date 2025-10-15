@@ -16,6 +16,8 @@ substitutions = {
     'byline': 'src/byline.html.in',
     'analytics': 'src/analytics.html.in',
     'table_style': 'src/table-style.html.in',
+    'figure_style': 'src/figure-style.html.in',
+    'sample_code_style': 'src/sample-code-style.html.in',
 }
 
 for line in sys.stdin:
