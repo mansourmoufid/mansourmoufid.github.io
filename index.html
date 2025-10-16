@@ -20,6 +20,9 @@
         <style>
             .new:after {
                 content: url('/images/new.gif');
+                display: inline-block;
+                vertical-align: middle;
+                line-height: 1em;
             }
         </style>
         <style>
@@ -222,11 +225,12 @@ fonttools subset tex-gyre-math/opentype/texgyrepagella-math.otf \
     </ul>
 </nav>
 
-            <img alt="Welcome" src="/images/welcome.gif">
             <hr>
         </header>
         <main>
-            <p>Welcome.</p>
+            <div>
+                <img alt="Welcome" src="/images/welcome.gif">
+            </div>
                 <ul>
                     <li>
                         Floating-point math

@@ -20,6 +20,9 @@
         <style>
             .new:after {
                 content: url('/images/new.gif');
+                display: inline-block;
+                vertical-align: middle;
+                line-height: 1em;
             }
         </style>
         ${common_style}
@@ -36,11 +39,12 @@
                 <meta property="url" content="${origin}/aboutme/">
             </span>
             ${nav}
-            <img alt="Welcome" src="/images/welcome.gif">
             <hr>
         </header>
         <main>
-            <p>Welcome.</p>
+            <div>
+                <img alt="Welcome" src="/images/welcome.gif">
+            </div>
                 <ul>
                     <li>
                         Floating-point math
